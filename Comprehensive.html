@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Lighting Components Demo</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    margin:20px;
+}
+
+canvas{
+    border:1px solid black;
+}
+
+.controls{
+    margin-top:10px;
+}
+
+#description{
+    margin-top:15px;
+    padding:10px;
+    width:700px;
+    background:#f4f4f4;
+    border-radius:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Ambient, Diffuse, and Specular Lighting Demo</h1>
+
+<canvas id="glcanvas" width="700" height="500"></canvas>
+
+<div class="controls">
+    <label><input type="checkbox" id="ambient" checked> Ambient</label>
+    <input type="color" id="ambientColor" value="#404040" title="Ambient light color">
+    <label><input type="checkbox" id="diffuse" checked> Diffuse</label>
+    <input type="color" id="diffuseColor" value="#0080ff" title="Diffuse light color">
+    <label><input type="checkbox" id="showLight" checked> Show Diffuse Light</label>
+    <br><br>
+    <label><input type="checkbox" id="specular" checked> Specular</label>
+    <input type="color" id="specularColor" value="#ffffff" title="Specular light color">
+    <label><input type="checkbox" id="showSpecularLight" checked> Show Specular Light</label>
+    <br><br>
+    X: <input type="range" id="specularLightX" min="-6" max="6" step="0.2" value="4"> 
+    Y: <input type="range" id="specularLightY" min="-6" max="6" step="0.2" value="4"> 
+    Z: <input type="range" id="specularLightZ" min="-6" max="6" step="0.2" value="4">
+</div>
+
+<div id="description"></div>
+
+<!-- Vertex Shader -->
+<script id="vertex-shader" type="x-shader/x-vertex">
+
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+
+uniform mat4 uModel;
+uniform mat4 uView;
+uniform mat4 uProjection;
+
+varying vec3 vPosition;
+varying vec3 vNormal;
+
+void main()
+{
+    vec4 worldPosition =
+        uModel * vec4(aPosition,1.0);
+
+    vPosition = worldPosition.xyz;
+
+    vNormal =
+        mat3(uModel) * aNormal;
+
+    gl_Position =
+        uProjection *
+        uView *
+        worldPosition;
+}
+
+</script>
+
+<!-- Fragment Shader -->
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+
+varying vec3 vPosition;
+varying vec3 vNormal;
+
+uniform vec3 uLightPos;
+uniform vec3 uSpecularLightPos;
+uniform vec3 uViewPos;
+
+uniform bool uAmbientOn;
+uniform bool uDiffuseOn;
+uniform bool uSpecularOn;
+uniform vec3 uAmbientColor;
+uniform vec3 uDiffuseColor;
+uniform vec3 uSpecularColor;
+uniform bool uIsLightSource;
+uniform vec3 uLightSourceColor;
+
+void main()
+{
+    if(uIsLightSource)
+    {
+        gl_FragColor = vec4(uLightSourceColor, 1.0);
+        return;
+    }
+
+    vec3 N = normalize(vNormal);
+    vec3 L = normalize(uLightPos - vPosition);
+    vec3 S = normalize(uSpecularLightPos - vPosition);
+    vec3 V = normalize(uViewPos - vPosition);
+
+    vec3 color = vec3(0.0);
+
+    //----------------------------------------
+    // AMBIENT
+    //----------------------------------------
+    if(uAmbientOn)
+    {
+        color += uAmbientColor;
+    }
+
+    //----------------------------------------
+    // DIFFUSE
+    //----------------------------------------
+    if(uDiffuseOn)
+    {
+        float diffuse =
+            max(dot(N,L),0.0);
+
+        color +=
+            diffuse *
+            uDiffuseColor;
+    }
+
+    //----------------------------------------
+    // SPECULAR
+    //----------------------------------------
+    if(uSpecularOn)
+    {
+        vec3 R =
+            reflect(-S,N);
+
+        float spec =
+            pow(
+                max(dot(V,R),0.0),
+                32.0
+            );
+
+        color +=
+            spec *
+            uSpecularColor;
+    }
+
+    gl_FragColor =
+        vec4(color,1.0);
+}
+
+</script>
+
+<script type="text/javascript" src="Common/initShaders.js"></script>
+<script type="text/javascript" src="Common/MVnew.js"></script>
+<script type="text/javascript" src="Comprehensive.js"></script>
+
+
+</body>
+</html>
