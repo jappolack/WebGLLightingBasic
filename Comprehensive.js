@@ -119,7 +119,7 @@ gl.uniformMatrix4fv(gl.getUniformLocation(program, "uProjection"), false, projec
 //--------------------------------------------------
 
 gl.uniform3f(gl.getUniformLocation(program, "uLightPos"), 4, 4, 4);
-gl.uniform3f(gl.getUniformLocation(program, "uSpecularLightPos"), 4, 4, 4);
+gl.uniform3f(gl.getUniformLocation(program, "uSpecularLightPos"), 0, 0, 4);
 gl.uniform3f(gl.getUniformLocation(program, "uViewPos"), 0, 0, 6);
 
 //--------------------------------------------------
